@@ -1,0 +1,1 @@
+from assemblyline.al.service.virustotal_static.virustotal_static import VirusTotalStatic
