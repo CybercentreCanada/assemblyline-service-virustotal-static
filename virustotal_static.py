@@ -56,7 +56,9 @@ class VirusTotalStatic(ServiceBase):
             json_response = r.json()
         except ValueError:
             self.log.warn("Invalid response from VirusTotal, "
-                          "HTTP code %s, content length %i" % (r.status_code, len(r.content)))
+                          "HTTP code: %s, "
+                          "content length: %i, "
+                          "headers: %s" % (r.status_code, len(r.content), repr(r.headers)))
             if len(r.content) == 0:
                 raise RecoverableError("VirusTotal didn't return a JSON object, HTTP code %s" % r.status_code)
             raise
