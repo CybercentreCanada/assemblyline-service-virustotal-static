@@ -4,6 +4,7 @@ import json
 from assemblyline.al.common.result import Result, ResultSection, Classification, SCORE, TEXT_FORMAT
 from assemblyline.al.common.av_result import VirusHitTag
 from assemblyline.al.service.base import ServiceBase
+from assemblyline.common.exceptions import RecoverableError
 
 
 class AvHitSection(ResultSection):
@@ -19,7 +20,7 @@ class VirusTotalStatic(ServiceBase):
     SERVICE_CATEGORY = "Static Analysis"
     SERVICE_DESCRIPTION = "This service checks the file hash to see if there's an existing VirusTotal report."
     SERVICE_ENABLED = False
-    SERVICE_REVISION = ServiceBase.parse_revision('$Id: 06af441095436024b2811aff79cadc8aef49d7f2 $')
+    SERVICE_REVISION = ServiceBase.parse_revision('$Id$')
     SERVICE_STAGE = "CORE"
     SERVICE_TIMEOUT = 60
     SERVICE_IS_EXTERNAL = True
@@ -51,7 +52,16 @@ class VirusTotalStatic(ServiceBase):
         url = self.cfg.get('BASE_URL') + "file/report"
         params = {'apikey': self.api_key, 'resource': request.sha256}
         r = requests.post(url, params)
-        json_response = r.json()
+        try:
+            json_response = r.json()
+        except ValueError:
+            self.log.warn("Invalid response from VirusTotal, "
+                          "HTTP code: %s, "
+                          "content length: %i, "
+                          "headers: %s" % (r.status_code, len(r.content), repr(r.headers)))
+            if len(r.content) == 0:
+                raise RecoverableError("VirusTotal didn't return a JSON object, HTTP code %s" % r.status_code)
+            raise
         return json_response
 
     def parse_results(self, response):
