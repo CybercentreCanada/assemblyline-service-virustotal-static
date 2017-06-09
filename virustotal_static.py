@@ -17,7 +17,7 @@ class AvHitSection(ResultSection):
 
 
 class VirusTotalStatic(ServiceBase):
-    SERVICE_CATEGORY = "Static Analysis"
+    SERVICE_CATEGORY = "External"
     SERVICE_DESCRIPTION = "This service checks the file hash to see if there's an existing VirusTotal report."
     SERVICE_ENABLED = False
     SERVICE_REVISION = ServiceBase.parse_revision('$Id$')
