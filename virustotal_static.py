@@ -4,7 +4,14 @@ import json
 from assemblyline.al.common.result import Result, ResultSection, Classification, SCORE, TEXT_FORMAT
 from assemblyline.al.common.av_result import VirusHitTag
 from assemblyline.al.service.base import ServiceBase
-from assemblyline.common.exceptions import RecoverableError
+
+
+class VTException(Exception):
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
 
 
 class AvHitSection(ResultSection):
@@ -55,13 +62,11 @@ class VirusTotalStatic(ServiceBase):
         try:
             json_response = r.json()
         except ValueError:
-            self.log.warn("Invalid response from VirusTotal, "
-                          "HTTP code: %s, "
-                          "content length: %i, "
-                          "headers: %s" % (r.status_code, len(r.content), repr(r.headers)))
-            if len(r.content) == 0:
-                raise RecoverableError("VirusTotal didn't return a JSON object, HTTP code %s" % r.status_code)
+            if r.status_code == 204:
+                message = "You exceeded the public API request rate limit (4 requests of any nature per minute)"
+                raise VTException(message)
             raise
+
         return json_response
 
     def parse_results(self, response):
