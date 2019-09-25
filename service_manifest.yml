@@ -24,7 +24,14 @@ config:
   
 submission_params: []
 
+heuristics:
+  - heur_id: 1
+    name: VirusTotal Static AV Hit
+    score: 1000
+    filetype: '*'
+    description: A VirusTotal static hash check returned an AV hit.
+
 docker_config:
   image: cccs/assemblyline-service-virustotalstatic:latest
   cpu_cores: 1.0
-  ram_mb: 1024
+  ram_mb: 128

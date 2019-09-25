@@ -72,7 +72,6 @@ class VirusTotalStatic(ServiceBase):
         response = response.get('results', response)
 
         if response is not None and response.get('response_code') == 1:
-            av_hits = ResultSection(title_text='Anti-Virus Detections')
             url_section = ResultSection(
                 'Virus total report permalink',
                 body_format=BODY_FORMAT.URL,
@@ -80,12 +79,15 @@ class VirusTotalStatic(ServiceBase):
             res.add_section(url_section)
 
             scans = response.get('scans', response)
+            av_hits = ResultSection(title_text='Anti-Virus Detections')
             av_hits.add_line('Found %d AV hit(s) from %d scans.' % (response.get('positives'), response.get('total')))
             for majorkey, subdict in sorted(scans.items()):
                 if subdict['detected']:
                     virus_name = subdict['result']
-                    av_hits.add_subsection(AvHitSection(majorkey, virus_name))
-                    av_hits.add_tag(virus_name, "scanner:%s" % majorkey)
+                    av_hit_section = AvHitSection(majorkey, virus_name)
+                    av_hit_section.set_heuristic(1, signature=f'{majorkey}.{virus_name}')
+                    av_hit_section.add_tag('av.virus_name', virus_name)
+                    av_hits.add_subsection(av_hit_section)
 
             res.add_section(av_hits)
 
