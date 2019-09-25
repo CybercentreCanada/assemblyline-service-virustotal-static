@@ -13,13 +13,13 @@ file_required: false
 timeout: 60
 disable_cache: false
 
-enabled: true
+enabled: false
 is_external: true
 licence_count: 0
 supported_platforms: [linux]
 
 config:
-  api_key: '',
+  api_key: '22a915ef8dcf3395d620e23074d4a475dd786da4be7cf6c6debbd08e5e9c3e83'
   base_url: 'https://www.virustotal.com/vtapi/v2/'
   
 submission_params: []
