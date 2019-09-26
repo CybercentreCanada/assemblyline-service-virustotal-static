@@ -15,33 +15,17 @@ class VTException(Exception):
 
 class AvHitSection(ResultSection):
     def __init__(self, av_name, virus_name):
-        title = '%s identified the file as %s' % (av_name, virus_name)
+        title = f'{av_name} identified the file as {virus_name}'
         super(AvHitSection, self).__init__(
             title_text=title,
             classification=Classification.UNRESTRICTED)
 
 
 class VirusTotalStatic(ServiceBase):
-#    SERVICE_CATEGORY = "External"
-#    SERVICE_DESCRIPTION = "This service checks the file hash to see if there's an existing VirusTotal report."
-#    SERVICE_ENABLED = False
-#    SERVICE_REVISION = ServiceBase.parse_revision('$Id$')
-#    SERVICE_STAGE = "CORE"
-#    SERVICE_TIMEOUT = 60
-#    SERVICE_IS_EXTERNAL = True
-#    SERVICE_DEFAULT_CONFIG = {
-#        'API_KEY': '',
-#        'BASE_URL': 'https://www.virustotal.com/vtapi/v2/'
-#    }
 
     def __init__(self, config=None):
         super(VirusTotalStatic, self).__init__(config)
         self.api_key = self.config.get("api_key", None)
-
-    # noinspection PyGlobalUndefined,PyUnresolvedReferences
-#    def import_service_deps(self):
- #       global requests
-  #      import requests
 
     def start(self):
         self.log.debug("VirusTotalStatic service started")
@@ -80,7 +64,7 @@ class VirusTotalStatic(ServiceBase):
 
             scans = response.get('scans', response)
             av_hits = ResultSection(title_text='Anti-Virus Detections')
-            av_hits.add_line('Found %d AV hit(s) from %d scans.' % (response.get('positives'), response.get('total')))
+            av_hits.add_line(f'Found {response.get("positives")} AV hit(s) from {response.get("total")} scans.')
             for majorkey, subdict in sorted(scans.items()):
                 if subdict['detected']:
                     virus_name = subdict['result']
