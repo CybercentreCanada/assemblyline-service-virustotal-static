@@ -1,0 +1,37 @@
+name: VirusTotalStatic
+version: 1
+description: >
+  This service performs a hash check against the VirusTotal API and returns the results
+
+accepts: .*
+rejects: empty|metadata/.*
+
+stage: CORE
+category: External
+
+file_required: false
+timeout: 60
+disable_cache: false
+
+enabled: false
+is_external: true
+licence_count: 0
+supported_platforms: [linux]
+
+config:
+  api_key: '22a915ef8dcf3395d620e23074d4a475dd786da4be7cf6c6debbd08e5e9c3e83'
+  base_url: 'https://www.virustotal.com/vtapi/v2/'
+  
+submission_params: []
+
+heuristics:
+  - heur_id: 1
+    name: VirusTotal Static AV Hit
+    score: 1000
+    filetype: '*'
+    description: A VirusTotal static hash check returned an AV hit.
+
+docker_config:
+  image: cccs/assemblyline-service-virustotalstatic:latest
+  cpu_cores: 1.0
+  ram_mb: 128
