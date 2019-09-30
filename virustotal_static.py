@@ -1,4 +1,5 @@
 import json
+
 import requests
 
 from assemblyline_v4_service.common.base import ServiceBase
@@ -22,7 +23,6 @@ class AvHitSection(ResultSection):
 
 
 class VirusTotalStatic(ServiceBase):
-
     def __init__(self, config=None):
         super(VirusTotalStatic, self).__init__(config)
         self.api_key = self.config.get("api_key", None)
@@ -36,7 +36,6 @@ class VirusTotalStatic(ServiceBase):
         request.result = result
 
     def scan_file(self, request):
-
         # Check to see if the file has been seen before
         url = self.config.get("base_url") + "file/report"
         params = {'apikey': self.api_key, 'resource': request.sha256}
@@ -56,14 +55,13 @@ class VirusTotalStatic(ServiceBase):
         response = response.get('results', response)
 
         if response is not None and response.get('response_code') == 1:
-            url_section = ResultSection(
-                'Virus total report permalink',
-                body_format=BODY_FORMAT.URL,
-                body=json.dumps({"url": response.get('permalink')}))
+            url_section = ResultSection('Virus total report permalink',
+                                        body_format=BODY_FORMAT.URL,
+                                        body=json.dumps({"url": response.get('permalink')}))
             res.add_section(url_section)
 
             scans = response.get('scans', response)
-            av_hits = ResultSection(title_text='Anti-Virus Detections')
+            av_hits = ResultSection('Anti-Virus Detections')
             av_hits.add_line(f'Found {response.get("positives")} AV hit(s) from {response.get("total")} scans.')
             for majorkey, subdict in sorted(scans.items()):
                 if subdict['detected']:
@@ -76,4 +74,3 @@ class VirusTotalStatic(ServiceBase):
             res.add_section(av_hits)
 
         return res
-

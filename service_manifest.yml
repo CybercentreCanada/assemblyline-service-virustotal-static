@@ -1,7 +1,7 @@
 name: VirusTotalStatic
 version: 1
 description: >
-  This service performs a hash check against the VirusTotal API and returns the results
+  This service performs a hash check against the VirusTotal API and returns the results.
 
 accepts: .*
 rejects: empty|metadata/.*
@@ -33,5 +33,5 @@ heuristics:
 
 docker_config:
   image: cccs/assemblyline-service-virustotalstatic:latest
-  cpu_cores: 1.0
+  cpu_cores: 0.1
   ram_mb: 128
