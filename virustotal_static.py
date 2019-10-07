@@ -36,16 +36,36 @@ class VirusTotalStatic(ServiceBase):
         request.result = result
 
     def scan_file(self, request):
+        api_key = None
+        if request.get_param('api_key'):
+            api_key = request.get_param('api_key')
+
         # Check to see if the file has been seen before
         url = self.config.get("base_url") + "file/report"
-        params = {'apikey': self.api_key, 'resource': request.sha256}
-        r = requests.post(url, params)
+        params = dict(
+            apikey=api_key or self.api_key,
+            resource=request.sha256,
+        )
+
+        json_response = None
         try:
-            json_response = r.json()
-        except ValueError:
-            if r.status_code == 204:
+            r = requests.get(url, params=params)
+            r.raise_for_status()
+
+            if r.ok:
+                json_response = r.json()
+            elif r.status_code == 204:
                 message = "You exceeded the public API request rate limit (4 requests of any nature per minute)"
                 raise VTException(message)
+        except requests.ConnectionError:
+            self.log.exception(f"ConnectionError: Couldn't connect to: {url}")
+        except requests.HTTPError as e:
+            self.log.exception(str(e))
+            raise
+        except requests.exceptions.RequestException as e:  # All other types of exceptions
+            self.log.exception(str(e))
+            raise
+        except:
             raise
 
         return json_response
