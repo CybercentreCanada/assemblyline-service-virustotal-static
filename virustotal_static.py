@@ -1,8 +1,10 @@
 import json
+from typing import Dict, Any
 
 import requests
 
 from assemblyline_v4_service.common.base import ServiceBase
+from assemblyline_v4_service.common.request import ServiceRequest
 from assemblyline_v4_service.common.result import Result, ResultSection, Classification, BODY_FORMAT
 
 
@@ -30,15 +32,17 @@ class VirusTotalStatic(ServiceBase):
     def start(self):
         self.log.debug("VirusTotalStatic service started")
 
-    def execute(self, request):
+    def execute(self, request: ServiceRequest):
         response = self.scan_file(request)
         result = self.parse_results(response)
         request.result = result
 
-    def scan_file(self, request):
+    def scan_file(self, request: ServiceRequest):
         api_key = None
-        if request.get_param('api_key'):
+        try:
             api_key = request.get_param('api_key')
+        except Exception:  # submission parameter not found
+            pass
 
         # Check to see if the file has been seen before
         url = self.config.get("base_url") + "file/report"
@@ -70,7 +74,7 @@ class VirusTotalStatic(ServiceBase):
 
         return json_response
 
-    def parse_results(self, response):
+    def parse_results(self, response: Dict[str, Any]):
         res = Result()
         response = response.get('results', response)
 
