@@ -36,6 +36,6 @@ heuristics:
     description: A VirusTotal static hash check returned an AV hit.
 
 docker_config:
-  image: cccs/assemblyline-service-virustotalstatic:latest
+  image: cccs/assemblyline-service-virustotal-static:latest
   cpu_cores: 0.1
   ram_mb: 128
