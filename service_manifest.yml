@@ -36,6 +36,6 @@ heuristics:
 
 docker_config:
   image: cccs/assemblyline-service-virustotal-static:latest
-  cpu_cores: 0.1
+  cpu_cores: 0.25
   ram_mb: 128
   allow_internet_access: true
