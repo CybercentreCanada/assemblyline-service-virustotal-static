@@ -45,11 +45,7 @@ class VirusTotalStatic(ServiceBase):
         request.result = result
 
     def scan_file(self, request: ServiceRequest):
-        api_key = None
-        try:
-            api_key = request.get_param('api_key')
-        except Exception:  # submission parameter not found
-            pass
+        api_key = request.get_param('api_key')
 
         # Check to see if the file has been seen before
         url = self.config.get("base_url") + "file/report"
@@ -76,12 +72,13 @@ class VirusTotalStatic(ServiceBase):
         except requests.exceptions.RequestException as e:  # All other types of exceptions
             self.log.exception(str(e))
             raise
-        except:
+        except Exception:
             raise
 
         return json_response
 
-    def parse_results(self, response: Dict[str, Any]):
+    @staticmethod
+    def parse_results(response: Dict[str, Any]):
         res = Result()
         response = response.get('results', response)
 
