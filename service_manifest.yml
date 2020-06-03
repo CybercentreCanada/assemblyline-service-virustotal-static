@@ -1,5 +1,5 @@
 name: VirusTotalStatic
-version: 1
+version: $SERVICE_TAG
 description: >
   This service performs a hash check against the VirusTotal API and returns the results.
 
@@ -35,7 +35,7 @@ heuristics:
     description: A VirusTotal static hash check returned an AV hit.
 
 docker_config:
-  image: ${REGISTRY}cccs/assemblyline-service-virustotal-static:latest
+  image: ${REGISTRY}cccs/assemblyline-service-virustotal-static:$SERVICE_TAG
   cpu_cores: 0.25
   ram_mb: 128
   allow_internet_access: true
