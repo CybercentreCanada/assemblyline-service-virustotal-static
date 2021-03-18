@@ -61,25 +61,25 @@ class VirusTotalStatic(ServiceBase):
     @staticmethod
     def parse_results(response: Dict[str, Any]):
         res = Result()
+        response = response['data']
 
-        if response is not None and response.get('response_code') == 1:
-            url_section = ResultSection('VirusTotal report permalink',
-                                        body_format=BODY_FORMAT.URL,
-                                        body=json.dumps({"url": f"https://www.virustotal.com/gui/{response['type']}/{response['id']}"}))
-            res.add_section(url_section)
+        url_section = ResultSection('VirusTotal report permalink',
+                                    body_format=BODY_FORMAT.URL,
+                                    body=json.dumps({"url": response['links']['self']}))
+        res.add_section(url_section)
+        response = response['attributes']
+        scans = response['last_analysis_results']
+        av_hits = ResultSection('Anti-Virus Detections')
+        av_hits.add_line(f'Found {response["last_analysis_stats"]["malicious"]} AV hit(s) from '
+                         f'{len(response["last_analysis_results"].keys())}')
+        for majorkey, subdict in sorted(scans.items()):
+            if subdict['category'] == "malicious":
+                virus_name = subdict['result']
+                av_hit_section = AvHitSection(majorkey, virus_name)
+                av_hit_section.set_heuristic(1, signature=f'{majorkey}.{virus_name}')
+                av_hit_section.add_tag('av.virus_name', virus_name)
+                av_hits.add_subsection(av_hit_section)
 
-            scans = response['last_analysis_results']
-            av_hits = ResultSection('Anti-Virus Detections')
-            av_hits.add_line(f'Found {response["last_analysis_stats"]["malicious"]} AV hit(s) from '
-                             f'{len(response["last_analysis_results"].keys())}')
-            for majorkey, subdict in sorted(scans.items()):
-                if subdict['category'] == "malicious":
-                    virus_name = subdict['result']
-                    av_hit_section = AvHitSection(majorkey, virus_name)
-                    av_hit_section.set_heuristic(1, signature=f'{majorkey}.{virus_name}')
-                    av_hit_section.add_tag('av.virus_name', virus_name)
-                    av_hits.add_subsection(av_hit_section)
-
-            res.add_section(av_hits)
+        res.add_section(av_hits)
 
         return res
