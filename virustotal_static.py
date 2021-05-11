@@ -1,10 +1,12 @@
-import json, time
+import base64, json, time
 from typing import Dict, Any
 from vt import Client, APIError
 
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.request import ServiceRequest
 from assemblyline_v4_service.common.result import Result, ResultSection, Classification, BODY_FORMAT
+
+MAX_RETRY = 3
 
 class AvHitSection(ResultSection):
     def __init__(self, av_name, virus_name):
@@ -36,27 +38,40 @@ class VirusTotalStatic(ServiceBase):
             self.log.error("No API key found for VirusTotal")
             raise e
 
-        response = self.scan_file(request)
+        if request.task.metadata.get('submitted_url', None) and request.task.depth == 0:
+            response = self.scan_url(request)
+        else:
+            response = self.scan_file(request)
         if response:
             result = self.parse_results(response)
             request.result = result
         else:
             request.result = Result()
 
-    def scan_file(self, request: ServiceRequest):
+    def common_scan(self, type: str, sample, retried: int = 0):
         json_response = None
-        try:
-            json_response = self.client.get_json(f"/files/{request.sha256}")
-        except APIError as e:
-            if "NotFoundError" in e.code:
-                self.log.warning("VirusTotal has nothing on this file.")
-            elif "QuotaExceededError" in e.code:
-                self.log.warning("Quota Exceeded. Trying again in 60s")
-                time.sleep(60)
-                return self.scan_file(request)
-            else:
-                self.log.error(e)
+        if retried < MAX_RETRY:
+            try:
+                json_response = self.client.get_json(f"/{type}s/{sample}")
+            except APIError as e:
+                if "NotFoundError" in e.code:
+                    self.log.warning(f"VirusTotal has nothing on this {type}.")
+                elif "QuotaExceededError" in e.code:
+                    self.log.warning("Quota Exceeded. Trying again in 60s")
+                    time.sleep(60)
+                    retried += 1
+                    return self.common_scan(type, sample, retried)
+                else:
+                    self.log.error(e)
         return json_response
+
+
+    def scan_file(self, request: ServiceRequest):
+        return self.common_scan("file", request.sha256)
+
+    def scan_url(self, request: ServiceRequest):
+        url_id = base64.urlsafe_b64encode(request.task.metadata.get('submitted_url').encode()).decode().strip("=")
+        return self.common_scan("url", url_id)
 
     @staticmethod
     def parse_results(response: Dict[str, Any]):
