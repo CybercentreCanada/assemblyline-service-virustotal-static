@@ -1,4 +1,6 @@
-import base64, json, time
+import base64
+import json
+import time
 from typing import Dict, Any
 from vt import Client, APIError
 
@@ -7,6 +9,7 @@ from assemblyline_v4_service.common.request import ServiceRequest
 from assemblyline_v4_service.common.result import Result, ResultSection, Classification, BODY_FORMAT
 
 MAX_RETRY = 3
+
 
 class AvHitSection(ResultSection):
     def __init__(self, av_name, virus_name):
@@ -33,7 +36,8 @@ class VirusTotalStatic(ServiceBase):
 
     def execute(self, request: ServiceRequest):
         try:
-            self.client = Client(apikey=self.config.get("api_key", request.get_param("api_key")))
+            self.client = Client(apikey=self.config.get("api_key", request.get_param("api_key")),
+                                 proxy=self.config.get('proxy') or None)
         except Exception as e:
             self.log.error("No API key found for VirusTotal")
             raise e
@@ -64,7 +68,6 @@ class VirusTotalStatic(ServiceBase):
                 else:
                     self.log.error(e)
         return json_response
-
 
     def scan_file(self, request: ServiceRequest):
         return self.common_scan("file", request.sha256)
